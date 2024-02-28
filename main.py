@@ -5,14 +5,19 @@ from api import APIKEY, SECRETKEY
 
 client = Client(APIKEY, SECRETKEY)
 
-tickers = client.get_all_tickers()
+ticker = client.get_symbol_ticker(symbol= 'SOLUSDT')
 
-ticker_df = pd.DataFrame(tickers)
+ticker_symbol  = ticker['symbol']
 
-ticker_df.set_index('symbol', inplace=True)
+ticket_price = ticker['price']
 
-depth = client.get_order_book(symbol= 'SOLUSDT') #glass
+trades = client.get_historical_trades(symbol= ticker_symbol)
 
-historical = client.get_historical_klines('SOLUSDT', Client.KLINE_INTERVAL_1DAY,'1 Jan 2024') 
+ticker_df = pd.DataFrame(trades)
 
-print(historical)
+depth = client.get_order_book(symbol= 'SOLUSDT')
+
+historical = client.get_historical_klines('SOLUSDT', Client.KLINE_INTERVAL_1DAY,'1 Jan 2024')  #OHLCV (Open, High, Low, Close, Volume)
+
+
+
