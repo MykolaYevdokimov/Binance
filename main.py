@@ -3,13 +3,11 @@ import mplfinance as mpf
 
 from api import APIKEY, SECRETKEY
 from client import client
-from historical_klines import get_historical_data, normalize_data_minMax, normalize_data_standard
+from tokens import get_historical_data, to_ohlc_type, normalize_data_standard, normalize_data_minMax
 
 
-historical_df = get_historical_data('SOLUSDT', client.KLINE_INTERVAL_1DAY, '1 Jan 2022', '2 Jan 2024')
-normalize_data_minMax = normalize_data_minMax(historical_df)
 
-ohlcv = pd.DataFrame(historical_df,
-                    columns = ['Open','High', 'Low', 'Close','Volume',]
-)
+tokens_pair_list = ['BTCUSDT', 'ETCUSDT', 'SOLUSDT']
+
+ohlcv = to_ohlc_type((get_historical_data('ETCUSDT', '1d', '1 Jan 2022', '2 Jan 2024')),value=True)
 
