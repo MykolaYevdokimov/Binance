@@ -9,5 +9,6 @@ from tokens import get_historical_data, to_ohlc_type, normalize_data_standard, n
 
 tokens_pair_list = ['BTCUSDT', 'ETCUSDT', 'SOLUSDT']
 
-ohlcv = to_ohlc_type((get_historical_data('ETCUSDT', '1d', '1 Jan 2022', '2 Jan 2024')),value=True)
+ohlcv = to_ohlc_type((get_historical_data('ETCUSDT', '1 Jan 2022', '2 Jan 2024', '1d',)),value=True)
 
+ 

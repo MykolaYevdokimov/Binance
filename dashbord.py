@@ -3,18 +3,22 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 import pandas as pd
+
 from dash.dependencies import Input, Output
 from tokens import normalize_data_standard, normalize_data_minMax
-from main import ohlcv, tokens_pair_list
+from main import tokens_pair_list
 from tokens import to_ohlc_type, get_historical_data
 
 external_stylesheets = ['assets/stylesheets.css']
 
 app = dash.Dash(__name__,external_stylesheets=external_stylesheets)
 
+def create_df_chart(token_name, start_date):
+    ohlcv = to_ohlc_type((get_historical_data(token_name, start_date)),value=True)
+    return ohlcv
+
 def create_scatter_chart(ohlcv):
     scatter_chart = dcc.Graph(
-        id='scatter_chart',
         figure={
             'data':[
                 go.Scatter(
@@ -47,49 +51,53 @@ def create_scatter_chart(ohlcv):
     )
     return scatter_chart
 
+
 @app.callback(
-    Output('output-graph', 'children'),
-    [Input('btn-std', 'n_clicks'),
-     Input('btn-scale', 'n_clicks'),
-     Input('btn-mean', 'n_clicks')]  
+    [
+        Output('token-dropdown', 'options'),
+        Output('scatter_chart', 'children'),
+    ],
+    [
+        Input('token-dropdown', 'value'),
+        Input('btn-std', 'n_clicks'),
+        Input('btn-scale', 'n_clicks'),
+        Input('btn-mean', 'n_clicks'),
+    ]
 )
-def update_graph(n_clicks_std, n_clicks_scale, n_clicks_mean):
+def update_graph(token_name, n_clicks_std, n_clicks_scale, n_clicks_mean):
+    ohlcv = create_df_chart(token_name, '1 Jan 2022')
     ctx = dash.callback_context
     if not ctx.triggered:
-        button_id = 'No clicks yet'
-        return create_scatter_chart(ohlcv)  # Возврат исходной диаграммы 
+        return [{'label': token, 'value': token} for token in tokens_pair_list], create_scatter_chart(ohlcv)   # Return initial dropdown options and scatter chart
     else:
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    if button_id == 'btn-std':
+    if button_id == 'token-dropdown':
+        selected_token = token_name
+        ohlcv = create_df_chart(selected_token, '1 Jan 2022')
+        return dash.no_update, create_scatter_chart(ohlcv)
+    elif button_id == 'btn-std':
         scaled_data = normalize_data_standard(ohlcv)
-        return create_scatter_chart(scaled_data)
-
+        return dash.no_update, create_scatter_chart(scaled_data)
     elif button_id == 'btn-scale':
         scaled_data = normalize_data_minMax(ohlcv)
-        return create_scatter_chart(scaled_data)
+        return dash.no_update, create_scatter_chart(scaled_data)
+    elif button_id == 'btn-mean':
+        return dash.no_update, create_scatter_chart(ohlcv)
+    return dash.no_update, dash.no_update
 
-    elif button_id == 'btn-mean':   
-        return create_scatter_chart(ohlcv)  
-
-
-tokens_name_dropdown_options = [{'label': token, 'value': token} for token in tokens_pair_list]
-
-dropdown = dcc.Dropdown(
-    id='token-dropdown',
-    options=tokens_name_dropdown_options,
-    value=tokens_pair_list[0]
-)
 
 app.layout = html.Div([
-    html.Div(dropdown,id='tokens-name'),
-    html.Div(id='output-graph'),
+    dcc.Dropdown(
+        id='token-dropdown',
+        options=[{'label': token, 'value': token} for token in tokens_pair_list],
+        value=tokens_pair_list[0]
+    ),
+    html.Div(id='scatter_chart'),
     html.Button('Mean Value', id='btn-mean', className='button'),
     html.Button('Standardization', id='btn-std', className='button'),
     html.Button('Scaling', id='btn-scale', className='button'),
-    
 ])
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)

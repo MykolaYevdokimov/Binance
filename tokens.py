@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 
 
-def get_historical_data(symbol, interval, start_date, end_date = None):
+def get_historical_data(symbol,start_date, end_date = None, interval = '1d'):
     data = client.get_historical_klines(symbol, interval, start_date, end_date)
     df = pd.DataFrame(data, columns=['Open time', 'Open', 'High', 'Low', 'Close',
                                       'Volume', 'Close time', 'Quote asset volume', 'Number of trades', 
