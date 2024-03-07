@@ -56,6 +56,11 @@ def create_scatter_chart(ohlcv):
     [
         Output('token-dropdown', 'options'),
         Output('scatter_chart', 'children'),
+        Output('token-open-max', 'children'),
+        Output('token-high-max', 'children'),
+        Output('token-low-max', 'children'),
+        Output('token-close-max', 'children'),
+        Output('token-volume-max', 'children'),
     ],
     [
         Input('token-dropdown', 'value'),
@@ -68,24 +73,23 @@ def update_graph(token_name, n_clicks_std, n_clicks_scale, n_clicks_mean):
     ohlcv = create_df_chart(token_name, '1 Jan 2022')
     ctx = dash.callback_context
     if not ctx.triggered:
-        return [{'label': token, 'value': token} for token in tokens_pair_list], create_scatter_chart(ohlcv)   # Return initial dropdown options and scatter chart
+        return [{'label': token, 'value': token} for token in tokens_pair_list], create_scatter_chart(ohlcv), ohlcv['Open'].max(), ohlcv['High'].max(), ohlcv['Low'].max(), ohlcv['Close'].max(),ohlcv['Volume'].max()
     else:
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if button_id == 'token-dropdown':
         selected_token = token_name
         ohlcv = create_df_chart(selected_token, '1 Jan 2022')
-        return dash.no_update, create_scatter_chart(ohlcv)
+        return dash.no_update, create_scatter_chart(ohlcv), ohlcv['Open'].max(), ohlcv['High'].max(), ohlcv['Low'].max(), ohlcv['Close'].max()
     elif button_id == 'btn-std':
         scaled_data = normalize_data_standard(ohlcv)
-        return dash.no_update, create_scatter_chart(scaled_data)
+        return dash.no_update, create_scatter_chart(scaled_data), ohlcv['Open'].max(), ohlcv['High'].max(), ohlcv['Low'].max(), ohlcv['Close'].max()
     elif button_id == 'btn-scale':
         scaled_data = normalize_data_minMax(ohlcv)
-        return dash.no_update, create_scatter_chart(scaled_data)
+        return dash.no_update, create_scatter_chart(scaled_data), ohlcv['Open'].max(), ohlcv['High'].max(), ohlcv['Low'].max(), ohlcv['Close'].max()
     elif button_id == 'btn-mean':
-        return dash.no_update, create_scatter_chart(ohlcv)
+        return dash.no_update, create_scatter_chart(ohlcv), ohlcv['Open'].max(), ohlcv['High'].max(), ohlcv['Low'].max(), ohlcv['Close'].max()
     return dash.no_update, dash.no_update
-
 
 app.layout = html.Div([
     dcc.Dropdown(
@@ -97,6 +101,20 @@ app.layout = html.Div([
     html.Button('Mean Value', id='btn-mean', className='button'),
     html.Button('Standardization', id='btn-std', className='button'),
     html.Button('Scaling', id='btn-scale', className='button'),
+    html.Div([
+        'Token Open Max: ',
+        html.Div(id = 'token-open-max', className='div'),
+        'Token High Max: ',
+        html.Div( id = 'token-high-max', className='div'),
+        'Token Low Max :',
+        html.Div( id = 'token-low-max', className='div'),
+        'Token Close Max :',
+        html.Div( id = 'token-close-max', className='div'),
+        'Token Volume Max :',
+        html.Div( id = 'token-volume-max', className='div')
+    ], id = 'token-statistics',
+    )
+
 ])
 
 if __name__ == '__main__':

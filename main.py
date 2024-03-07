@@ -11,4 +11,5 @@ tokens_pair_list = ['BTCUSDT', 'ETCUSDT', 'SOLUSDT']
 
 ohlcv = to_ohlc_type((get_historical_data('ETCUSDT', '1 Jan 2022', '2 Jan 2024', '1d',)),value=True)
 
- 
+print(ohlcv)
+print(ohlcv['Open'].max())
