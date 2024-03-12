@@ -78,8 +78,7 @@ def update_graph(token_name, n_clicks_std, n_clicks_scale, n_clicks_mean):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if button_id == 'token-dropdown':
-        selected_token = token_name
-        ohlcv = create_df_chart(selected_token, '1 Jan 2022')
+        ohlcv = create_df_chart(token_name, '1 Jan 2022')
         return dash.no_update, create_scatter_chart(ohlcv), ohlcv['Open'].max(), ohlcv['High'].max(), ohlcv['Low'].max(), ohlcv['Close'].max(),ohlcv['Volume'].max()
     elif button_id == 'btn-std':
         scaled_data = normalize_data_standard(ohlcv)
@@ -90,6 +89,17 @@ def update_graph(token_name, n_clicks_std, n_clicks_scale, n_clicks_mean):
     elif button_id == 'btn-mean':
         return dash.no_update, create_scatter_chart(ohlcv), ohlcv['Open'].max(), ohlcv['High'].max(), ohlcv['Low'].max(), ohlcv['Close'].max(),ohlcv['Volume'].max()
     return dash.no_update, dash.no_update
+
+@app.callback(
+    Output("download-csv", "data"),
+    [Input("btn-download", "n_clicks"),
+     Input('token-dropdown', 'value')]
+)
+def download_csv(n_clicks, token_name):
+    if n_clicks:
+        ohlcv = create_df_chart(token_name, '1 Jan 2022')
+        csv_string = ohlcv.to_csv(index=False, encoding="utf-8")
+        return dict(content=csv_string, filename="ohlcv_data.csv")
 
 app.layout = html.Div([
     dcc.Dropdown(
@@ -111,7 +121,9 @@ app.layout = html.Div([
         'Token Close Max :',
         html.Div( id = 'token-close-max', className='div'),
         'Token Volume Max :',
-        html.Div( id = 'token-volume-max', className='div')
+        html.Div( id = 'token-volume-max', className='div'),
+        dcc.Download(id="download-csv"),
+        html.Button("Скачать CSV", id="btn-download"),
     ], id = 'token-statistics',
     )
 
