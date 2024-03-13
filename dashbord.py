@@ -4,7 +4,7 @@ import dash_html_components as html
 import plotly.graph_objs as go
 import pandas as pd
 
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from tokens import normalize_data_standard, normalize_data_minMax
 from main import tokens_pair_list
 from tokens import to_ohlc_type, get_historical_data
@@ -93,13 +93,13 @@ def update_graph(token_name, n_clicks_std, n_clicks_scale, n_clicks_mean):
 @app.callback(
     Output("download-csv", "data"),
     [Input("btn-download", "n_clicks"),
-     Input('token-dropdown', 'value')]
+     State('token-dropdown', 'value')]
 )
 def download_csv(n_clicks, token_name):
     if n_clicks:
         ohlcv = create_df_chart(token_name, '1 Jan 2022')
         csv_string = ohlcv.to_csv(index=False, encoding="utf-8")
-        return dict(content=csv_string, filename="ohlcv_data.csv")
+        return dict(content=csv_string, filename= token_name +"_data.csv" )
 
 app.layout = html.Div([
     dcc.Dropdown(
@@ -123,9 +123,10 @@ app.layout = html.Div([
         'Token Volume Max :',
         html.Div( id = 'token-volume-max', className='div'),
         dcc.Download(id="download-csv"),
-        html.Button("Скачать CSV", id="btn-download"),
-    ], id = 'token-statistics',
-    )
+    ],
+    id = 'token-statistics',
+    ),
+    html.Button("Скачать CSV", id="btn-download", className='button'),
 
 ])
 
